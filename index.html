@@ -94,7 +94,7 @@
   </main>
 
   <button id="resetButton">초기화</button>
-  
+
   <!-- 지도 추가 -->
   <div id="map"></div>
 
@@ -105,69 +105,71 @@
     <a href="#">이용약관</a> | 
     <a href="#">개인정보처리방침</a>
   </footer>
-  
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+ 
   <script>
     const yearSpan = document.getElementById('year');
     const currentYear = new Date().getFullYear();
     yearSpan.textContent = currentYear;
-  
+
     const button = document.querySelector('button');
     const timeDisplay = document.querySelector('.walk-info p:nth-child(1)');
     const distanceDisplay = document.querySelector('.walk-info p:nth-child(2)');
     const stepsDisplay = document.querySelector('.walk-info p:nth-child(3)');
-  
+
     let isWalking = false;
     let timer;
     let seconds = 0;
     let distance = 0;
     let steps = 0;
-  
+
     // 날짜 초기화
     const today = new Date().toDateString();
     const savedDate = localStorage.getItem('walkDate');
-  
+
     if (savedDate !== today) {
       localStorage.setItem('walkDate', today);
       localStorage.setItem('walkSeconds', 0);
       localStorage.setItem('walkDistance', 0);
       localStorage.setItem('walkSteps', 0);
     }
-  
+
     // 저장된 값 불러오기
     seconds = parseInt(localStorage.getItem('walkSeconds'), 10);
     distance = parseFloat(localStorage.getItem('walkDistance'));
     steps = parseInt(localStorage.getItem('walkSteps'), 10);
-  
+
     updateDisplay();
-  
+
     function updateDisplay() {
       console.log('화면 업데이트', { seconds, distance, steps });
-  
+
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
       const remainingSeconds = seconds % 60;
-  
+
       timeDisplay.textContent = `시간: ${hours}시 ${minutes}분 ${remainingSeconds}초`;
       distanceDisplay.textContent = `거리: ${distance.toFixed(2)}km`;
       stepsDisplay.textContent = `걸음 수: ${steps}보`;
     }
-  
+
     // ✅ 만보기 기능
     let lastStepTime = Date.now();
     const threshold = 16;
-  
+
     window.addEventListener('devicemotion', function(event) {
       if (!isWalking) return; // 산책 중일 때만 측정
-  
+
       const acceleration = event.accelerationIncludingGravity;
       const totalAcceleration = Math.sqrt(
         acceleration.x * acceleration.x +
         acceleration.y * acceleration.y +
         acceleration.z * acceleration.z
       );
-  
+
       const currentTime = Date.now();
-  
+
       if (totalAcceleration > threshold && currentTime - lastStepTime > 500) {
         steps++;
         lastStepTime = currentTime;
@@ -177,33 +179,69 @@
         distance = steps * 0.0008;
         localStorage.setItem('walkSteps', steps);
         localStorage.setItem('walkDistance', distance);
-  
+
         updateDisplay();
       }
     });
-  
-    // PWA
+
+    // 지도 초기화
+    let mapInitialized = false; // 지도 초기화 여부 체크
+    let map; // 전역 지도 변수
+
+    // 지도 초기화 함수
+    function initializeMap() {
+      if (mapInitialized) {
+        console.log('지도는 이미 초기화되었습니다.');
+        return; // 이미 초기화되었으면 함수 종료
+      }
+      mapInitialized = true;
+
+      console.log("지도 초기화 시작");
+
+      try {
+        // 지도 초기화
+        map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 위치
+
+        // 타일 레이어 추가
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // 지도에 마커 추가
+        L.marker([37.5665, 126.9780]).addTo(map)
+          .bindPopup('서울')
+          .openPopup();
+
+        console.log('지도 초기화 완료');
+      } catch (error) {
+        console.log("지도 초기화 중 오류 발생:", error);
+      }
+    }
+
+    // PWA 및 서비스 워커
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
-        .then(function(registration) {
+        .then(function (registration) {
           console.log('Service Worker 등록 성공:', registration);
+          initializeMap();  // 서비스 워커 등록 후 지도 초기화
         })
-        .catch(function(error) {
+        .catch(function (error) {
           console.log('Service Worker 등록 실패:', error);
         });
     }
 
-    // 지도 초기화
-    const map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 위치
+    // 산책 시작/그만 버튼 처리
+    button.addEventListener('click', () => {
+      if (isWalking) {
+        stopTracking();
+      } else {
+        startTracking();
+      }
+    });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    // 위치 업데이트와 경로 표시
+    // 위치 추적 시작
     let lastPosition = null;
     let path = [];
     let line;
+    let watchId;
 
     function toRad(value) {
       return (value * Math.PI) / 180;
@@ -227,8 +265,19 @@
     }
 
     function startTracking() {
+      if (!isWalking) {
+        isWalking = true;
+        button.textContent = '산책 그만';
+        
+        // 타이머 시작
+        timer = setInterval(() => {
+          seconds++;
+          updateDisplay();
+        }, 1000);  // 1초마다 시간 증가
+      }
+      
       if ('geolocation' in navigator) {
-        navigator.geolocation.watchPosition(position => {
+        watchId = navigator.geolocation.watchPosition(position => {
           const { latitude, longitude } = position.coords;
 
           if (lastPosition) {
@@ -257,58 +306,42 @@
           timeout: 5000
         });
       } else {
-        alert('위치 정보 사용이 불가능합니다.');
+        alert('이 장치에서는 위치 정보를 사용할 수 없습니다.');
       }
     }
 
     function stopTracking() {
-      if (watchId !== null) {
+      if (isWalking) {
+        isWalking = false;
+        button.textContent = '산책 시작';
+        
+        // 타이머 멈추기
+        clearInterval(timer);
+      }
+
+      if (watchId) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
+        console.log('위치 추적이 중지되었습니다.');
       }
     }
 
-    // 버튼 클릭 이벤트
-    button.addEventListener('click', () => {
-      isWalking = !isWalking;
-
-      if (isWalking) {
-        button.textContent = '산책 그만';
-        startTracking();
-      } else {
-        button.textContent = '산책 시작';
-        stopTracking();
-      }
-    });
-
-    // Reset 버튼
+    // 초기화 버튼 처리
     const resetButton = document.getElementById('resetButton');
     resetButton.addEventListener('click', () => {
-      seconds = 0;
-      distance = 0;
-      steps = 0;
+      if (confirm('초기화하시겠습니까?')) {
+        localStorage.removeItem('walkDate');
+        localStorage.removeItem('walkSeconds');
+        localStorage.removeItem('walkDistance');
+        localStorage.removeItem('walkSteps');
+        
+        seconds = 0;
+        distance = 0;
+        steps = 0;
 
-      localStorage.setItem('walkSeconds', 0);
-      localStorage.setItem('walkDistance', 0);
-      localStorage.setItem('walkSteps', 0);
-      path = []; // 경로 초기화
-      if (line) line.setLatLngs(path); // 경로 지우기
-      updateDisplay();
+        updateDisplay();
+      }
     });
-
-
-      // 지도 초기화 함수
-  function initializeMap() {
-    const map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 중심 좌표로 초기화 (위도, 경도)
-
-    // 지도 타일 레이어 설정 (OpenStreetMap 사용)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-  }
-
-  // 지도를 초기화합니다.
-  initializeMap();
   </script>
 </body>
 </html>
