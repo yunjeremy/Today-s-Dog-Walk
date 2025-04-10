@@ -6,15 +6,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/gghoulmon192.png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <style>
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Gowun Dodum', sans-serif;
-  background-color: #f5f7fa;
-  color: #333;
-  text-align: center;
-}
+    #map {
+      height: 500px;
+      width: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Gowun Dodum', sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      text-align: center;
+    }
 
     header {
       background-color: #4A90E2;
@@ -47,10 +53,10 @@ body {
       transition: background-color 0.3s;
       width: 150px;
       height: 150px;
-  white-space: nowrap; /* 줄바꿈 방지 */
-  display: flex; /* 플렉스박스 적용 */
-  align-items: center; /* 수직 가운데 */
-  justify-content: center; /* 수평 가운데 */
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     button:hover {
@@ -89,6 +95,9 @@ body {
 
   <button id="resetButton">초기화</button>
   
+  <!-- 지도 추가 -->
+  <div id="map"></div>
+
   <footer>
     © <span id="year"></span> 꿀아 사랑해 <br>
     📧 이메일: wofla2592@naver.com <br>
@@ -132,7 +141,7 @@ body {
     updateDisplay();
   
     function updateDisplay() {
-  console.log('화면 업데이트', { seconds, distance, steps });
+      console.log('화면 업데이트', { seconds, distance, steps });
   
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
@@ -162,7 +171,8 @@ body {
       if (totalAcceleration > threshold && currentTime - lastStepTime > 500) {
         steps++;
         lastStepTime = currentTime;
-  
+        console.log('한 걸음:', steps);
+
         // 실시간 업데이트
         distance = steps * 0.0008;
         localStorage.setItem('walkSteps', steps);
@@ -183,135 +193,108 @@ body {
         });
     }
 
-    
-    // Reset Button
+    // 지도 초기화
+    const map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 위치
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // 위치 업데이트와 경로 표시
+    let lastPosition = null;
+    let path = [];
+    let line;
+
+    function toRad(value) {
+      return (value * Math.PI) / 180;
+    }
+
+    function calculateDistance(pos1, pos2) {
+      const R = 6371; // km
+      const dLat = toRad(pos2.latitude - pos1.latitude);
+      const dLon = toRad(pos2.longitude - pos1.longitude);
+      const lat1 = toRad(pos1.latitude);
+      const lat2 = toRad(pos2.latitude);
+
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1) * Math.cos(lat2) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return R * c; // km
+    }
+
+    function startTracking() {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.watchPosition(position => {
+          const { latitude, longitude } = position.coords;
+
+          if (lastPosition) {
+            const movedDistance = calculateDistance(lastPosition, { latitude, longitude });
+            if (movedDistance >= 0.005) { // 5m 이상 이동 시
+              distance += movedDistance;
+              localStorage.setItem('walkDistance', distance);
+              updateDisplay();
+              path.push([latitude, longitude]);
+              if (line) {
+                line.setLatLngs(path);
+              } else {
+                line = L.polyline(path, { color: 'blue' }).addTo(map);
+              }
+              lastPosition = { latitude, longitude };
+            }
+          } else {
+            lastPosition = { latitude, longitude };
+            path.push([latitude, longitude]);
+          }
+        }, error => {
+          console.error('위치 정보 에러:', error);
+        }, {
+          enableHighAccuracy: true,
+          maximumAge: 1000,
+          timeout: 5000
+        });
+      } else {
+        alert('위치 정보 사용이 불가능합니다.');
+      }
+    }
+
+    function stopTracking() {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+    }
+
+    // 버튼 클릭 이벤트
+    button.addEventListener('click', () => {
+      isWalking = !isWalking;
+
+      if (isWalking) {
+        button.textContent = '산책 그만';
+        startTracking();
+      } else {
+        button.textContent = '산책 시작';
+        stopTracking();
+      }
+    });
+
+    // Reset 버튼
     const resetButton = document.getElementById('resetButton');
     resetButton.addEventListener('click', () => {
-  // 값 초기화
-  seconds = 0;
-  distance = 0;
-  steps = 0;
+      seconds = 0;
+      distance = 0;
+      steps = 0;
 
-  // 저장된 값 초기화
-  localStorage.setItem('walkSeconds', 0);
-  localStorage.setItem('walkDistance', 0);
-  localStorage.setItem('walkSteps', 0);
-
-  updateDisplay();
-});
-
-// GPS 위치 기반 거리
-let lastPosition = null;
-let watchId = null; // ✅ 위치 추적 ID
-const movementThreshold = 0.005; // ✅ 이동 거리 최소값 (단위: km) → 약 5m
-
-function toRad(value) {
-  return (value * Math.PI) / 180;
-}
-
-function calculateDistance(pos1, pos2) {
-  const R = 6371; // km
-  const dLat = toRad(pos2.latitude - pos1.latitude);
-  const dLon = toRad(pos2.longitude - pos1.longitude);
-  const lat1 = toRad(pos1.latitude);
-  const lat2 = toRad(pos2.latitude);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1) * Math.cos(lat2) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c; // km
-}
-
-function startTracking() {
-  if ('geolocation' in navigator) {
-    watchId = navigator.geolocation.watchPosition(position => {
-      const { latitude, longitude } = position.coords;
-
-      if (lastPosition) {
-        const movedDistance = calculateDistance(lastPosition, { latitude, longitude });
-
-        if (movedDistance >= movementThreshold) { // ✅ 오차 필터링
-          distance += movedDistance;
-          localStorage.setItem('walkDistance', distance);
-          updateDisplay();
-          lastPosition = { latitude, longitude };
-        }
-      } else {
-        lastPosition = { latitude, longitude };
-      }
-    }, error => {
-      console.error('위치 정보 에러:', error);
-    }, {
-      enableHighAccuracy: true,
-      maximumAge: 1000,
-      timeout: 5000
+      localStorage.setItem('walkSeconds', 0);
+      localStorage.setItem('walkDistance', 0);
+      localStorage.setItem('walkSteps', 0);
+      path = []; // 경로 초기화
+      if (line) line.setLatLngs(path); // 경로 지우기
+      updateDisplay();
     });
-  } else {
-    alert('위치 정보 사용이 불가능합니다.');
-  }
-}
-
-function stopTracking() {
-  if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
-}
-
-// ✅ 버튼 클릭 이벤트 수정
-button.addEventListener('click', () => {
-  isWalking = !isWalking;
-  console.log('버튼 클릭됨, isWalking:', isWalking);
-
-  if (isWalking) {
-    console.log('산책 시작');
-    button.textContent = '산책 그만';
-    timer = setInterval(() => {
-      seconds++;
-      localStorage.setItem('walkSeconds', seconds);
-      updateDisplay();
-    }, 1000);
-
-    // 위치 추적 시작
-    watchId = navigator.geolocation.watchPosition(
-      position => {
-  console.log('위치 업데이트', position);
-  
-  const { latitude, longitude } = position.coords;
-
-  if (lastPosition) {
-    const movedDistance = calculateDistance(lastPosition, { latitude, longitude });
-    console.log('이동 거리', movedDistance, 'km');
-
-    if (movedDistance >= movementThreshold) {
-      distance += movedDistance;
-      localStorage.setItem('walkDistance', distance);
-      updateDisplay();
-      lastPosition = { latitude, longitude };
-    }
-  } else {
-    lastPosition = { latitude, longitude };
-    console.log('초기 위치 설정', lastPosition);
-  }
-}
-    );
-
-  } else {
-    console.log('산책 종료');
-    button.textContent = '산책 시작';
-    clearInterval(timer);
-
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
-      console.log('위치 추적 중지');
-      watchId = null;
-    }
-  }
-});
 
   </script>
 </body>
