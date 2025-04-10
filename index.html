@@ -133,7 +133,8 @@ body {
   
     button.addEventListener('click', () => {
       isWalking = !isWalking;
-  
+      console.log('버튼 클릭됨, isWalking:', isWalking);
+
       if (isWalking) {
         button.textContent = '산책 그만';
         timer = setInterval(() => {
@@ -156,6 +157,8 @@ body {
     });
   
     function updateDisplay() {
+  console.log('화면 업데이트', { seconds, distance, steps });
+  
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
       const remainingSeconds = seconds % 60;
@@ -287,8 +290,10 @@ function stopTracking() {
 // ✅ 버튼 클릭 이벤트 수정
 button.addEventListener('click', () => {
   isWalking = !isWalking;
+  console.log('버튼 클릭됨, isWalking:', isWalking);
 
   if (isWalking) {
+    console.log('산책 시작');
     button.textContent = '산책 그만';
     timer = setInterval(() => {
       seconds++;
@@ -296,11 +301,28 @@ button.addEventListener('click', () => {
       updateDisplay();
     }, 1000);
 
-    startTracking(); // ✅ 위치 추적 시작
+    // 위치 추적 시작
+    watchId = navigator.geolocation.watchPosition(
+      position => {
+        console.log('위치 업데이트', position);
+        handlePosition(position);
+      },
+      error => {
+        console.error('위치 에러', error);
+      },
+      { enableHighAccuracy: true, maximumAge: 1000 }
+    );
+
   } else {
+    console.log('산책 종료');
     button.textContent = '산책 시작';
     clearInterval(timer);
-    stopTracking(); // ✅ 위치 추적 종료
+
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      console.log('위치 추적 중지');
+      watchId = null;
+    }
   }
 });
 
