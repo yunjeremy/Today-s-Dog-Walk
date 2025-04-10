@@ -221,6 +221,89 @@ body {
 
   updateDisplay();
 });
+
+// GPS 위치 기반 거리
+let lastPosition = null;
+let watchId = null; // ✅ 위치 추적 ID
+const movementThreshold = 0.005; // ✅ 이동 거리 최소값 (단위: km) → 약 5m
+
+function toRad(value) {
+  return (value * Math.PI) / 180;
+}
+
+function calculateDistance(pos1, pos2) {
+  const R = 6371; // km
+  const dLat = toRad(pos2.latitude - pos1.latitude);
+  const dLon = toRad(pos2.longitude - pos1.longitude);
+  const lat1 = toRad(pos1.latitude);
+  const lat2 = toRad(pos2.latitude);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // km
+}
+
+function startTracking() {
+  if ('geolocation' in navigator) {
+    watchId = navigator.geolocation.watchPosition(position => {
+      const { latitude, longitude } = position.coords;
+
+      if (lastPosition) {
+        const movedDistance = calculateDistance(lastPosition, { latitude, longitude });
+
+        if (movedDistance >= movementThreshold) { // ✅ 오차 필터링
+          distance += movedDistance;
+          localStorage.setItem('walkDistance', distance);
+          updateDisplay();
+          lastPosition = { latitude, longitude };
+        }
+      } else {
+        lastPosition = { latitude, longitude };
+      }
+    }, error => {
+      console.error('위치 정보 에러:', error);
+    }, {
+      enableHighAccuracy: true,
+      maximumAge: 1000,
+      timeout: 5000
+    });
+  } else {
+    alert('위치 정보 사용이 불가능합니다.');
+  }
+}
+
+function stopTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+}
+
+// ✅ 버튼 클릭 이벤트 수정
+button.addEventListener('click', () => {
+  isWalking = !isWalking;
+
+  if (isWalking) {
+    button.textContent = '산책 그만';
+    timer = setInterval(() => {
+      seconds++;
+      localStorage.setItem('walkSeconds', seconds);
+      updateDisplay();
+    }, 1000);
+
+    startTracking(); // ✅ 위치 추적 시작
+  } else {
+    button.textContent = '산책 시작';
+    clearInterval(timer);
+    stopTracking(); // ✅ 위치 추적 종료
+  }
+});
+
   </script>
 </body>
 </html>
