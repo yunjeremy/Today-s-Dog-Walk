@@ -304,13 +304,25 @@ button.addEventListener('click', () => {
     // 위치 추적 시작
     watchId = navigator.geolocation.watchPosition(
       position => {
-        console.log('위치 업데이트', position);
-        handlePosition(position);
-      },
-      error => {
-        console.error('위치 에러', error);
-      },
-      { enableHighAccuracy: true, maximumAge: 1000 }
+  console.log('위치 업데이트', position);
+  
+  const { latitude, longitude } = position.coords;
+
+  if (lastPosition) {
+    const movedDistance = calculateDistance(lastPosition, { latitude, longitude });
+    console.log('이동 거리', movedDistance, 'km');
+
+    if (movedDistance >= movementThreshold) {
+      distance += movedDistance;
+      localStorage.setItem('walkDistance', distance);
+      updateDisplay();
+      lastPosition = { latitude, longitude };
+    }
+  } else {
+    lastPosition = { latitude, longitude };
+    console.log('초기 위치 설정', lastPosition);
+  }
+}
     );
 
   } else {
