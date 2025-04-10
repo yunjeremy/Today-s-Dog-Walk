@@ -131,31 +131,6 @@ body {
   
     updateDisplay();
   
-    button.addEventListener('click', () => {
-      isWalking = !isWalking;
-      console.log('버튼 클릭됨, isWalking:', isWalking);
-
-      if (isWalking) {
-        button.textContent = '산책 그만';
-        timer = setInterval(() => {
-          seconds++;
-  
-          // 거리 = 보 수 * 평균 보폭(m) / 1000 (km)
-          distance = steps * 0.0008;
-  
-          // 저장
-          localStorage.setItem('walkSeconds', seconds);
-          localStorage.setItem('walkDistance', distance);
-          localStorage.setItem('walkSteps', steps);
-  
-          updateDisplay();
-        }, 1000);
-      } else {
-        button.textContent = '산책 시작';
-        clearInterval(timer);
-      }
-    });
-  
     function updateDisplay() {
   console.log('화면 업데이트', { seconds, distance, steps });
   
