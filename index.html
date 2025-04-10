@@ -97,112 +97,111 @@ body {
   
   <script>
     const yearSpan = document.getElementById('year');
-const currentYear = new Date().getFullYear();
-yearSpan.textContent = currentYear;
-
-const button = document.querySelector('button');
-const timeDisplay = document.querySelector('.walk-info p:nth-child(1)');
-const distanceDisplay = document.querySelector('.walk-info p:nth-child(2)');
-const stepsDisplay = document.querySelector('.walk-info p:nth-child(3)');
-
-let isWalking = false;
-let timer;
-let seconds = 0;
-let distance = 0;
-let steps = 0;
-let lastAcceleration = null;
-
-// 날짜 초기화 확인
-const today = new Date().toDateString();
-const savedDate = localStorage.getItem('walkDate');
-
-if (savedDate !== today) {
-  localStorage.setItem('walkDate', today);
-  localStorage.setItem('walkSeconds', 0);
-  localStorage.setItem('walkDistance', 0);
-  localStorage.setItem('walkSteps', 0);
-}
-
-// 저장된 값 불러오기
-seconds = parseInt(localStorage.getItem('walkSeconds'), 10);
-distance = parseFloat(localStorage.getItem('walkDistance'));
-steps = parseInt(localStorage.getItem('walkSteps'), 10);
-
-updateDisplay();
-
-button.addEventListener('click', () => {
-  isWalking = !isWalking;
-
-  if (isWalking) {
-    button.textContent = '산책 그만';
-
-    // 타이머 시작
-    timer = setInterval(() => {
-      seconds++;
-      localStorage.setItem('walkSeconds', seconds);
-      updateDisplay();
-    }, 1000);
-
-    // 만보기 시작
-    initPedometer();
-
-  } else {
-    button.textContent = '산책 시작';
-    clearInterval(timer);
-    window.removeEventListener('devicemotion', handleMotion); // 중지 시 센서 리스너 제거
-  }
-});
-
-function updateDisplay() {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
-
-  timeDisplay.textContent = `시간: ${hours}시 ${minutes}분 ${remainingSeconds}초`;
-  distanceDisplay.textContent = `거리: ${distance.toFixed(2)}km`;
-  stepsDisplay.textContent = `걸음 수: ${steps}보`;
-}
-
-function initPedometer() {
-  if (window.DeviceMotionEvent) {
-    window.addEventListener('devicemotion', handleMotion);
-  } else {
-    alert('이 기기는 만보기 기능을 지원하지 않습니다.');
-  }
-}
-
-function handleMotion(event) {
-  if (!isWalking) return;
-
-  const acceleration = event.accelerationIncludingGravity;
-
-  if (lastAcceleration) {
-    const deltaX = Math.abs(acceleration.x - lastAcceleration.x);
-    const deltaY = Math.abs(acceleration.y - lastAcceleration.y);
-    const deltaZ = Math.abs(acceleration.z - lastAcceleration.z);
-
-    const totalDelta = deltaX + deltaY + deltaZ;
-
-    if (totalDelta > 3) { // 임계값 조정 가능
-      steps++;
-      localStorage.setItem('walkSteps', steps);
-      updateDisplay();
+    const currentYear = new Date().getFullYear();
+    yearSpan.textContent = currentYear;
+  
+    const button = document.querySelector('button');
+    const timeDisplay = document.querySelector('.walk-info p:nth-child(1)');
+    const distanceDisplay = document.querySelector('.walk-info p:nth-child(2)');
+    const stepsDisplay = document.querySelector('.walk-info p:nth-child(3)');
+  
+    let isWalking = false;
+    let timer;
+    let seconds = 0;
+    let distance = 0;
+    let steps = 0;
+  
+    // 날짜 초기화
+    const today = new Date().toDateString();
+    const savedDate = localStorage.getItem('walkDate');
+  
+    if (savedDate !== today) {
+      localStorage.setItem('walkDate', today);
+      localStorage.setItem('walkSeconds', 0);
+      localStorage.setItem('walkDistance', 0);
+      localStorage.setItem('walkSteps', 0);
     }
-  }
-
-  lastAcceleration = acceleration;
-}
-
-// PWA
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js')
-    .then(function(registration) {
-      console.log('Service Worker 등록 성공:', registration);
-    })
-    .catch(function(error) {
-      console.log('Service Worker 등록 실패:', error);
+  
+    // 저장된 값 불러오기
+    seconds = parseInt(localStorage.getItem('walkSeconds'), 10);
+    distance = parseFloat(localStorage.getItem('walkDistance'));
+    steps = parseInt(localStorage.getItem('walkSteps'), 10);
+  
+    updateDisplay();
+  
+    button.addEventListener('click', () => {
+      isWalking = !isWalking;
+  
+      if (isWalking) {
+        button.textContent = '산책 그만';
+        timer = setInterval(() => {
+          seconds++;
+  
+          // 거리 = 보 수 * 평균 보폭(m) / 1000 (km)
+          distance = steps * 0.0008;
+  
+          // 저장
+          localStorage.setItem('walkSeconds', seconds);
+          localStorage.setItem('walkDistance', distance);
+          localStorage.setItem('walkSteps', steps);
+  
+          updateDisplay();
+        }, 1000);
+      } else {
+        button.textContent = '산책 시작';
+        clearInterval(timer);
+      }
     });
-  }
+  
+    function updateDisplay() {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const remainingSeconds = seconds % 60;
+  
+      timeDisplay.textContent = `시간: ${hours}시 ${minutes}분 ${remainingSeconds}초`;
+      distanceDisplay.textContent = `거리: ${distance.toFixed(2)}km`;
+      stepsDisplay.textContent = `걸음 수: ${steps}보`;
+    }
+  
+    // ✅ 만보기 기능
+    let lastStepTime = Date.now();
+    const threshold = 16;
+  
+    window.addEventListener('devicemotion', function(event) {
+      if (!isWalking) return; // 산책 중일 때만 측정
+  
+      const acceleration = event.accelerationIncludingGravity;
+      const totalAcceleration = Math.sqrt(
+        acceleration.x * acceleration.x +
+        acceleration.y * acceleration.y +
+        acceleration.z * acceleration.z
+      );
+  
+      const currentTime = Date.now();
+  
+      if (totalAcceleration > threshold && currentTime - lastStepTime > 500) {
+        steps++;
+        lastStepTime = currentTime;
+  
+        // 실시간 업데이트
+        distance = steps * 0.0008;
+        localStorage.setItem('walkSteps', steps);
+        localStorage.setItem('walkDistance', distance);
+  
+        updateDisplay();
+      }
+    });
+  
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(function(registration) {
+          console.log('Service Worker 등록 성공:', registration);
+        })
+        .catch(function(error) {
+          console.log('Service Worker 등록 실패:', error);
+        });
+    }
   </script>
 </body>
 </html>
