@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>오늘의 산책</title>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/gghoulmon192.png" />
+  <style>
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Gowun Dodum', sans-serif;
+  background-color: #f5f7fa;
+  color: #333;
+  text-align: center;
+}
+
+    header {
+      background-color: #4A90E2;
+      color: white;
+      padding: 20px 0;
+      font-size: 24px;
+    }
+
+    main {
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .walk-container {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    button {
+      background-color: #4A90E2;
+      color: white;
+      border: none;
+      padding: 20px 40px;
+      font-size: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 150px;
+      height: 150px;
+  white-space: nowrap; /* 줄바꿈 방지 */
+  display: flex; /* 플렉스박스 적용 */
+  align-items: center; /* 수직 가운데 */
+  justify-content: center; /* 수평 가운데 */
+    }
+
+    button:hover {
+      background-color: #357ABD;
+    }
+
+    .walk-info {
+      text-align: left;
+      font-size: 18px;
+      line-height: 1.8;
+    }
+
+    footer {
+      background-color: #ddd;
+      padding: 10px 0;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    오늘의 산책 🐕
+  </header>
+
+  <main>
+    <div class="walk-container">
+      <button id="walkButton">산책 시작</button>
+      <div class="walk-info">
+        <p id="time">시간: 0시 0분 0초</p>
+        <p id="distance">거리: 0km</p>
+        <p id="steps">걸음 수: 0보</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © <span id="year"></span> 꿀아 사랑해 <br>
+    📧 이메일: wofla2592@naver.com <br>
+    <a href="#">회사 소개</a> | 
+    <a href="#">이용약관</a> | 
+    <a href="#">개인정보처리방침</a>
+  </footer>
+  
+  <script>
+    const yearSpan = document.getElementById('year');
+const currentYear = new Date().getFullYear();
+yearSpan.textContent = currentYear;
+
+const button = document.querySelector('button');
+const timeDisplay = document.querySelector('.walk-info p:nth-child(1)');
+const distanceDisplay = document.querySelector('.walk-info p:nth-child(2)');
+const stepsDisplay = document.querySelector('.walk-info p:nth-child(3)');
+
+let isWalking = false;
+let timer;
+let seconds = 0;
+let distance = 0;
+let steps = 0;
+let lastAcceleration = null;
+
+// 날짜 초기화 확인
+const today = new Date().toDateString();
+const savedDate = localStorage.getItem('walkDate');
+
+if (savedDate !== today) {
+  localStorage.setItem('walkDate', today);
+  localStorage.setItem('walkSeconds', 0);
+  localStorage.setItem('walkDistance', 0);
+  localStorage.setItem('walkSteps', 0);
+}
+
+// 저장된 값 불러오기
+seconds = parseInt(localStorage.getItem('walkSeconds'), 10);
+distance = parseFloat(localStorage.getItem('walkDistance'));
+steps = parseInt(localStorage.getItem('walkSteps'), 10);
+
+updateDisplay();
+
+button.addEventListener('click', () => {
+  isWalking = !isWalking;
+
+  if (isWalking) {
+    button.textContent = '산책 그만';
+
+    // 타이머 시작
+    timer = setInterval(() => {
+      seconds++;
+      localStorage.setItem('walkSeconds', seconds);
+      updateDisplay();
+    }, 1000);
+
+    // 만보기 시작
+    initPedometer();
+
+  } else {
+    button.textContent = '산책 시작';
+    clearInterval(timer);
+    window.removeEventListener('devicemotion', handleMotion); // 중지 시 센서 리스너 제거
+  }
+});
+
+function updateDisplay() {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  timeDisplay.textContent = `시간: ${hours}시 ${minutes}분 ${remainingSeconds}초`;
+  distanceDisplay.textContent = `거리: ${distance.toFixed(2)}km`;
+  stepsDisplay.textContent = `걸음 수: ${steps}보`;
+}
+
+function initPedometer() {
+  if (window.DeviceMotionEvent) {
+    window.addEventListener('devicemotion', handleMotion);
+  } else {
+    alert('이 기기는 만보기 기능을 지원하지 않습니다.');
+  }
+}
+
+function handleMotion(event) {
+  if (!isWalking) return;
+
+  const acceleration = event.accelerationIncludingGravity;
+
+  if (lastAcceleration) {
+    const deltaX = Math.abs(acceleration.x - lastAcceleration.x);
+    const deltaY = Math.abs(acceleration.y - lastAcceleration.y);
+    const deltaZ = Math.abs(acceleration.z - lastAcceleration.z);
+
+    const totalDelta = deltaX + deltaY + deltaZ;
+
+    if (totalDelta > 3) { // 임계값 조정 가능
+      steps++;
+      localStorage.setItem('walkSteps', steps);
+      updateDisplay();
+    }
+  }
+
+  lastAcceleration = acceleration;
+}
+
+// PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(function(registration) {
+      console.log('Service Worker 등록 성공:', registration);
+    })
+    .catch(function(error) {
+      console.log('Service Worker 등록 실패:', error);
+    });
+  }
+  </script>
+</body>
+</html>
