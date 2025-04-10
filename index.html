@@ -296,6 +296,19 @@
       updateDisplay();
     });
 
+
+      // 지도 초기화 함수
+  function initializeMap() {
+    const map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 중심 좌표로 초기화 (위도, 경도)
+
+    // 지도 타일 레이어 설정 (OpenStreetMap 사용)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+  }
+
+  // 지도를 초기화합니다.
+  initializeMap();
   </script>
 </body>
 </html>
