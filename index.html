@@ -87,6 +87,8 @@ body {
     </div>
   </main>
 
+  <button id="resetButton">초기화</button>
+  
   <footer>
     © <span id="year"></span> 꿀아 사랑해 <br>
     📧 이메일: wofla2592@naver.com <br>
@@ -202,6 +204,23 @@ body {
           console.log('Service Worker 등록 실패:', error);
         });
     }
+
+    
+    // Reset Button
+    const resetButton = document.getElementById('resetButton');
+    resetButton.addEventListener('click', () => {
+  // 값 초기화
+  seconds = 0;
+  distance = 0;
+  steps = 0;
+
+  // 저장된 값 초기화
+  localStorage.setItem('walkSeconds', 0);
+  localStorage.setItem('walkDistance', 0);
+  localStorage.setItem('walkSteps', 0);
+
+  updateDisplay();
+});
   </script>
 </body>
 </html>
