@@ -97,7 +97,7 @@ this.motionHandler = (event) => {
       
   console.log(`🧩 Total Acceleration: ${totalAcceleration}`);
 
-        const threshold = 12; // 가속도 임계값 (조절 가능)
+        const threshold = 50; // 가속도 임계값 (조절 가능)
         if (totalAcceleration > threshold) {
             console.log('🚶 걸음 감지!');
           this.updateSteps(1);
