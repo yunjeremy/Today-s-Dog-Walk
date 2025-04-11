@@ -98,7 +98,7 @@ this.motionHandler = (event) => {
   console.log(`🧩 Total Acceleration: ${totalAcceleration}`);
 
   
-  const threshold = 20; // 가속도 임계값
+  const threshold = 50; // 가속도 임계값
   const debounceTime = 500; // 디바운스 시간 (ms)
   
   let lastStepTime = 0;
@@ -106,12 +106,12 @@ this.motionHandler = (event) => {
   
   if (totalAcceleration > threshold) {
       const now = Date.now();
-      if (!isStepDetected && now - lastStepTime > debounceTime && now - lastStepTime < 2000) {
-          console.log("🚶 걸음 감지!");
-          lastStepTime = now;
-          this.updateSteps(1);
-          isStepDetected = true; // 감지 플래그 설정
-      }
+      console.log("🚶 걸음 감지1!");
+      if (now - lastStepTime > debounceTime && now - lastStepTime < 2000) {
+        console.log("🚶 걸음 감지2!");
+        lastStepTime = now; // ✅ currentTime → now 로 수정
+        this.updateSteps(1);
+    }
   } else {
       isStepDetected = false; // 안정화 구간으로 플래그 초기화
   }
