@@ -38,20 +38,73 @@ class WalkTracker {
     }
   
     startWalk() {
-      this.timerInterval = setInterval(() => this.updateTime(), 1000);
-      this.geoWatchId = navigator.geolocation.watchPosition(
-        (position) => this.updateDistance(position),
-        (error) => console.error(error),
-        { enableHighAccuracy: true }
-      );
-    }
+        this.timerInterval = setInterval(() => this.updateTime(), 1000);
+        this.geoWatchId = navigator.geolocation.watchPosition(
+          (position) => this.updateDistance(position),
+          (error) => console.error(error),
+          { enableHighAccuracy: true }
+        );
+      
+       // ✅ DeviceMotionEvent 사용해서 걸음 수 추정
+this.motionHandler = (event) => {
+    console.log('📱 Device motion event detected!');
+    console.log('📦 Event data:', event);
+    this.handleMotion(event);
+  };
   
-    stopWalk() {
-      clearInterval(this.timerInterval);
-      clearInterval(this.stepSimulator);
-      navigator.geolocation.clearWatch(this.geoWatchId);
+  // 디바이스 모션 이벤트 등록
+  if (typeof DeviceMotionEvent !== 'undefined') {
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      // 📱 iOS 13 이상: 권한 요청
+      console.log('🔐 iOS detected, requesting motion permission...');
+      DeviceMotionEvent.requestPermission()
+        .then(response => {
+          console.log('🔓 Permission response:', response);
+          if (response === 'granted') {
+            console.log('✅ Permission granted, adding event listener.');
+            window.addEventListener('devicemotion', this.motionHandler);
+          } else {
+            console.warn('🚫 Motion permission denied.');
+          }
+        })
+        .catch(error => {
+          console.error('❌ Error requesting motion permission:', error);
+        });
+    } else {
+      // 🤖 Android 또는 기타 기기: 바로 이벤트 등록
+      console.log('🤖 Non-iOS device, adding event listener.');
+      window.addEventListener('devicemotion', this.motionHandler);
     }
-  
+  } else {
+    console.warn('⚠️ DeviceMotionEvent is not supported on this device.');
+  }
+      }
+      
+      stopWalk() {
+        clearInterval(this.timerInterval);
+        navigator.geolocation.clearWatch(this.geoWatchId);
+        window.removeEventListener('devicemotion', this.motionHandler);
+      }
+      
+
+      handleMotion(event) {
+        const acceleration = event.accelerationIncludingGravity;
+        const totalAcceleration = Math.sqrt(
+          acceleration.x ** 2 +
+          acceleration.y ** 2 +
+          acceleration.z ** 2
+        );
+      
+  console.log(`🧩 Total Acceleration: ${totalAcceleration}`);
+
+        const threshold = 12; // 가속도 임계값 (조절 가능)
+        if (totalAcceleration > threshold) {
+            console.log('🚶 걸음 감지!');
+          this.updateSteps(1);
+        }
+      }
+
+
     updateTime() {
       if (!this.isWalking) return;
       this.time++;
