@@ -98,7 +98,7 @@ this.motionHandler = (event) => {
   console.log(`🧩 Total Acceleration: ${totalAcceleration}`);
 
   
-  const threshold = 70; // 가속도 임계값
+  const threshold = 20; // 가속도 임계값
   const debounceTime = 500; // 디바운스 시간 (ms)
   
   let lastStepTime = 0;
