@@ -97,27 +97,24 @@ this.motionHandler = (event) => {
       
   console.log(`🧩 Total Acceleration: ${totalAcceleration}`);
 
-  
-  console.log("🚶 걸음 감지000!");
-  
   const threshold = 50; // 가속도 임계값
   const debounceTime = 500; // 디바운스 시간 (ms)
-  
-  let lastStepTime = 0;
+
   let isStepDetected = false;
-  
-  console.log("🚶 걸음 감지0!");
-  if (totalAcceleration > threshold) {
-      const now = Date.now();
-      console.log("🚶 걸음 감지1!");
-      if (now - lastStepTime > debounceTime && now - lastStepTime < 2000) {
+  let lastStepTime = null;
+
+if (totalAcceleration > threshold) {
+    const now = Date.now();
+    console.log("🚶 걸음 감지1!");
+
+    if (lastStepTime === null || (now - lastStepTime > debounceTime && now - lastStepTime < 2000)) {
         console.log("🚶 걸음 감지2!");
-        lastStepTime = now; // ✅ currentTime → now 로 수정
+        lastStepTime = now;
         this.updateSteps(1);
     }
-  } else {
-      isStepDetected = false; // 안정화 구간으로 플래그 초기화
-  }
+} else {
+    isStepDetected = false;
+}
       }
 
 
