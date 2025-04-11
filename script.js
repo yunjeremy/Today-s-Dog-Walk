@@ -97,10 +97,20 @@ this.motionHandler = (event) => {
       
   console.log(`🧩 Total Acceleration: ${totalAcceleration}`);
 
+  
         const threshold = 50; // 가속도 임계값 (조절 가능)
+
+        let lastStepTime = 0;
+const debounceTime = 500; // ms (0.5초 간격)
+
         if (totalAcceleration > threshold) {
-            console.log('🚶 걸음 감지!');
-          this.updateSteps(1);
+            const currentTime = Date.now();
+
+            if (currentTime - lastStepTime > debounceTime) {
+                console.log("🚶 걸음 감지!");
+                lastStepTime = currentTime;
+                this.updateSteps(1);
+            }
         }
       }
 
