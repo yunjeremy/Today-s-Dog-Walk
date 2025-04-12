@@ -182,3 +182,52 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
 }
 
 document.addEventListener('DOMContentLoaded', () => new WalkTracker());
+
+
+
+class KakaoMap {
+  constructor(mapContainerId, options = {}) {
+    this.mapContainer = document.getElementById(mapContainerId);
+
+    const defaultOptions = {
+      center: new kakao.maps.LatLng(33.450701, 126.570667),
+      level: 3,
+      ...options
+    };
+
+    this.map = new kakao.maps.Map(this.mapContainer, defaultOptions);
+  }
+
+  setCenter(lat, lng) {
+    const moveLatLon = new kakao.maps.LatLng(lat, lng);
+    this.map.setCenter(moveLatLon);
+  }
+
+  addMarker(lat, lng) {
+    const markerPosition = new kakao.maps.LatLng(lat, lng);
+    const marker = new kakao.maps.Marker({
+      position: markerPosition
+    });
+    marker.setMap(this.map);
+    return marker;
+  }
+
+  zoomIn() {
+    this.map.setLevel(this.map.getLevel() - 1);
+  }
+
+  zoomOut() {
+    this.map.setLevel(this.map.getLevel() + 1);
+  }
+}
+
+window.onload = function () {
+  // Kakao Map API가 로드된 후 실행
+  const myMap = new KakaoMap('map');
+
+  // 예시: 지도 중심 이동
+  // myMap.setCenter(37.5665, 126.9780); // 서울
+
+  // 예시: 마커 추가
+  // myMap.addMarker(37.5665, 126.9780);
+};
