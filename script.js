@@ -152,7 +152,7 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    return `${hours} 시 ${minutes} 분 ${seconds} 초`;
+    return `${hours}시 ${minutes}분 ${seconds}초`;
   }
 
   formatDistance(meters) {

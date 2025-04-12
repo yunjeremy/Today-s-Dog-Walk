@@ -1,3 +1,4 @@
+/* 전체 스타일 */
 body {
   font-family: 'Inter', sans-serif;
   background-color: #f5f7fa;
@@ -7,6 +8,7 @@ body {
 }
 
 .container {
+  position: relative; /* 부모 컨테이너는 그대로 유지 */
   max-width: 400px;
   margin: 40px auto;
   padding: 20px;
@@ -17,9 +19,10 @@ body {
 
 h1 {
   text-align: center;
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #4a90e2;
+  font-size: 28px;
+  margin-top: 0px; /* 기존보다 더 위로 */
+  margin-bottom: 0px;
+  color: #6da9de;
 }
 
 .stats {
@@ -45,10 +48,11 @@ h1 {
   color: #4a4a4a;
 }
 
+/* 기본 버튼 스타일 */
 button {
   width: 100%;
   padding: 15px;
-  background-color: #4a90e2;
+  background-color: #6da9de;
   color: white;
   border: none;
   border-radius: 12px;
@@ -58,9 +62,72 @@ button {
 }
 
 button:hover {
-  background-color: #357ABD;
+  background-color: #5c95c9;
 }
 
 button:active {
-  background-color: #2c5aa0;
+  background-color: #4a7fb3;
+}
+
+/* 헤더 스타일 */
+.header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* 리셋 버튼 스타일 */
+#resetButton {
+  position: absolute;
+  top: 0px;
+  right: 10px;
+  width: 30px; /* 버튼 가로 길이 지정 */
+  padding: 4px 6px;
+  font-size: 12px;
+  background-color: #6da9de;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  text-align: center;
+}
+
+#resetButton:hover {
+  background-color: #5c95c9;
+}
+
+#resetButton:active {
+  background-color: #4a7fb3;
+}
+
+/* 산책 시작 버튼 스타일 */
+#startWalkButton {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #6da9de;
+  color: white;
+  border: none;
+  font-size: 25px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, transform 0.2s;
+  transform-origin: center center;
+  font-family: 'Malgun Gothic', '돋움', sans-serif; /* 고딕 계열 */
+  font-weight: bold; /* 두껍게 */
+}
+
+#startWalkButton:hover {
+  background-color: #5c95c9;
+  transform: translateX(-50%) scale(1.05); /* 수평 중앙 유지 + 확대 */
+}
+
+#startWalkButton:active {
+  background-color: #4a7fb3;
+  transform: translateX(-50%) scale(0.98); /* 수평 중앙 유지 + 축소 */
 }
