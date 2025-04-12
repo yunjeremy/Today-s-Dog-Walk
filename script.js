@@ -41,13 +41,15 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
 
       this.startWalk();
     } else {
-      this.walkStratTime = new Date();
+      this.walkEndTime = new Date();
       console.log('산책 종료');
       console.log(`총 시간 : ${this.totalTime}초`);
       console.log(`총 거리 : ${this.totalDistance}km`);
       console.log(`총 걸음 수 : ${this.totalSteps}`);
 
       // 날짜 바뀌면 초기화
+      console.log(this.walkStratTime.toISOString().split('T')[0])
+      console.log(this.walkEndTime.toISOString().split('T')[0])
       if (this.walkStratTime.toISOString().split('T')[0] !== this.walkEndTime.toISOString().split('T')[0])
       {
         this.resetWalk();

@@ -141,3 +141,29 @@ button:active {
   background-color: #4a7fb3;
   transform: translateX(-50%) scale(0.98); /* 수평 중앙 유지 + 축소 */
 }
+
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid #ddd;
+  padding: 20px 0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+}
+
+.tab-item:hover {
+  color: #000;
+}
