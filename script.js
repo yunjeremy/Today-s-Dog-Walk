@@ -11,6 +11,9 @@ class WalkTracker {
     this.lastStepTime = Date.now();
     this.threshold = 16; // 가속도 임계값
 
+    this.walkStratTime = null;
+    this.walkEndTime = null;
+
     this.init();
   }
 
@@ -33,8 +36,23 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     button.textContent = this.isWalking ? '산책 그만' : '산책 시작';
 
     if (this.isWalking) {
+      this.walkStratTime = new Date();
+      console.log('산책 시작:', this.startTime);
+
       this.startWalk();
     } else {
+      this.walkStratTime = new Date();
+      console.log('산책 종료');
+      console.log(`총 시간 : ${this.totalTime}초`);
+      console.log(`총 거리 : ${this.totalDistance}km`);
+      console.log(`총 걸음 수 : ${this.totalSteps}`);
+
+      // 날짜 바뀌면 초기화
+      if (this.walkStratTime.toISOString().split('T')[0] !== this.walkEndTime.toISOString().split('T')[0])
+      {
+        this.resetWalk();
+      }
+
       this.stopWalk();
     }
   }
@@ -82,7 +100,9 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     this.steps = 0;
     this.lastPosition = null;
     this.lastStepTime = Date.now();
+    console.log('매일 0시에 초기화되었습니다!');
 
+    localStorage.removeItem('walkTime');
     localStorage.removeItem('walkSteps');
     localStorage.removeItem('walkDistance');
 
@@ -102,7 +122,7 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
 
     const currentTime = Date.now();
 
-    if (totalAcceleration > this.threshold && currentTime - this.lastStepTime > 500) {
+    if (totalAcceleration > this.threshold && currentTime - this.lastStepTime > 300) {
       this.steps++;
       this.lastStepTime = currentTime;
 

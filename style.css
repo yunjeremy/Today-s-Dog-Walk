@@ -48,6 +48,16 @@ h1 {
   color: #4a4a4a;
 }
 
+.container {
+  position: relative;
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: white; /* ← 요게 컨테이너 색깔이에요 */
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
 /* 기본 버튼 스타일 */
 button {
   width: 100%;
