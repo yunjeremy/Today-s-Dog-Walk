@@ -1,14 +1,3 @@
-<!-- 프로젝트의 메인 뼈대 (구조 역할)
-웹사이트의 화면에 표시되는 요소들을 HTML로 구성한 파일입니다.
-버튼, 지도, 걸음 수 표시, 거리, 시간, Step Progress Bar 등 보여지는 모든 UI 요소들이 이 안에 있습니다.
-주요 기능:
-산책 시작 버튼
-시간, 거리, 걸음 수 출력
-Step Progress Bar
-지도 (div id="map")
-외부 JS / CSS 파일을 불러오는 역할
-구조만 담당하고, 실제 스타일이나 기능은 외부에서 가져옵니다. -->
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -16,54 +5,102 @@ Step Progress Bar
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>프로젝트</title>
   <link rel="stylesheet" href="style.css"/>
-  <!-- <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=44322da032bafc078a9ac9bb9cae9777"></script> -->
+  <style>
+    /* 전체 화면 */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    /* 지도는 전체화면 + 맨 뒤로 */
+    #map {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    /* 콘텐츠는 지도 위로 */
+    .container {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+      color: white;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stats {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .stat-card {
+      background: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+      padding: 10px;
+      border-radius: 8px;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    /* 버튼 영역 스타일 */
+    .button-area {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
 </head>
 <body>
+
+  <!-- 지도 영역 -->
+  <div id="map"></div>
+
+  <!-- 콘텐츠 영역 -->
   <div class="container">
-    <!-- <h1>오늘 산책 완료</h1> -->
     <div class="header">
       <h1>오늘의 산책</h1>
       <button id="resetButton">↻</button>
     </div>
-  
-    
+
     <div class="stats">
       <div class="stat-card">
         시간
-        <span id="time">0시 0분 0초</span>
+        <div id="time">0시 0분 0초</div>
       </div>
       <div class="stat-card">
         거리
-        <span id="distance">0.0km</span>
+        <div id="distance">0.0km</div>
       </div>
       <div class="stat-card">
         걸음 수
-        <span id="steps">0</span>
+        <div id="steps">0</div>
       </div>
     </div>
-  
 
-    
-<!-- 지도 영역 -->
-<div id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div>
-
-<!-- 카카오 지도 API -->
-<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=44322da032bafc078a9ac9bb9cae9777"></script>
-<!-- script.js -->
-<script src="script.js"></script>
-<script>
-  const kakaoMap = new KakaoMap('map');
-  kakaoMap.loadCurrentLocation();
-</script>
-
-
-   <!-- 버튼 영역 -->
-    <div style="margin-top: 20px; display: flex; justify-content: center;">
+    <!-- 버튼 영역 -->
+    <div class="button-area">
       <button id="startWalkButton">산책 시작</button>
     </div>
-  </div>  
+  </div>
 
+  <!-- 카카오 지도 API -->
+  <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=44322da032bafc078a9ac9bb9cae9777"></script>
 
+  <!-- script.js -->
   <script src="script.js"></script>
+  <script>
+    const kakaoMap = new KakaoMap('map');
+    kakaoMap.loadCurrentLocation();
+  </script>
+
 </body>
 </html>
