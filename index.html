@@ -18,18 +18,33 @@ Step Progress Bar
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div class="step-progress">
-    <!-- 스텝 프로그레스 바 -->
-  </div>
+  <div class="container">
+    <h1>산책 트래커</h1>
   
-  <button id="startWalkButton">산책 시작</button>
-  <div id="walkInfo">
-    <p>시간: <span id="time">0시 0분 0초</span></p>
-    <p>거리: <span id="distance">0.0km</span></p>
-    <p>걸음 수: <span id="steps">0</span></p>
-  </div>
-
-<button id="resetButton">리셋</button>
+    <div class="stats">
+      <div class="stat-card">
+        <span id="time">0 시 0 분 0 초</span>
+        시간
+      </div>
+      <div class="stat-card">
+        <span id="distance">0.0km</span>
+        거리
+      </div>
+      <div class="stat-card">
+        <span id="steps">0</span>
+        걸음 수
+      </div>
+    </div>
+  
+    <!-- 지도 -->
+    <div id="map"></div>
+  
+    <!-- 버튼 영역 추가 -->
+    <div style="margin-top: 20px; display: flex; justify-content: center;">
+      <button id="startWalkButton">산책 시작</button>
+      <button id="resetButton">초기화</button>
+    </div>
+  </div>  
 
   <div id="map"></div>
 

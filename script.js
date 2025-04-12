@@ -106,7 +106,7 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
       this.lastStepTime = currentTime;
 
       // 거리 업데이트 (1걸음 당 약 0.8m)
-      this.distance = this.steps * 0.8;
+      //this.distance = this.steps * 0.8;
 
       // localStorage 저장
       localStorage.setItem('walkSteps', this.steps);
