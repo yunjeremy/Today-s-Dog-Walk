@@ -184,57 +184,46 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
 document.addEventListener('DOMContentLoaded', () => new WalkTracker());
 
 
+
 class KakaoMap {
-  constructor() {
-    this.container = document.getElementById('map');
-    this.options = {
-      center: new kakao.maps.LatLng(33.450701, 126.570667),
+  constructor(mapContainerId) {
+    this.mapContainer = document.getElementById(mapContainerId);
+    this.map = null;
+    this.marker = null;
+  }
+
+  initMap(lat, lon) {
+    const options = {
+      center: new kakao.maps.LatLng(lat, lon),
       level: 3
     };
-    this.map = new kakao.maps.Map(this.container, this.options);
-  }
 
-  // 중심 좌표 이동 메서드
-  setCenter(latitude, longitude) {
-    const newCenter = new kakao.maps.LatLng(latitude, longitude);
-    this.map.setCenter(newCenter);
-  }
+    this.map = new kakao.maps.Map(this.mapContainer, options);
 
-  // 마커 추가 메서드 (옵션)
-  addMarker(latitude, longitude) {
-    const markerPosition = new kakao.maps.LatLng(latitude, longitude);
-    const marker = new kakao.maps.Marker({
-      position: markerPosition
+    this.marker = new kakao.maps.Marker({
+      position: new kakao.maps.LatLng(lat, lon),
+      map: this.map
     });
-    marker.setMap(this.map);
   }
 
-  // 선 긋기 메서드 (옵션: 산책 경로 표시용)
-  drawPolyline(pathCoords) {
-    const polyline = new kakao.maps.Polyline({
-      path: pathCoords.map(coord => new kakao.maps.LatLng(coord.lat, coord.lng)),
-      strokeWeight: 5,
-      strokeColor: '#FF0000',
-      strokeOpacity: 0.7,
-      strokeStyle: 'solid'
-    });
-    polyline.setMap(this.map);
+  loadCurrentLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          this.initMap(lat, lon);
+        },
+        error => {
+          console.error('위치 정보를 가져올 수 없습니다.', error);
+          // Fallback: 기본 위치 (서울 시청)
+          this.initMap(37.5665, 126.9780);
+        }
+      );
+    } else {
+      alert('이 브라우저는 Geolocation을 지원하지 않습니다.');
+      // Fallback: 기본 위치
+      this.initMap(37.5665, 126.9780);
+    }
   }
 }
-
-// 사용 예시
-const kakaoMap = new KakaoMap();
-
-// 지도 중심 이동
-// kakaoMap.setCenter(37.5665, 126.9780);
-
-// 마커 추가
-// kakaoMap.addMarker(37.5665, 126.9780);
-
-// 선 그리기 예시
-// const walkPath = [
-//   { lat: 37.5665, lng: 126.9780 },
-//   { lat: 37.5651, lng: 126.9895 }
-// ];
-// kakaoMap.drawPolyline(walkPath);
-

@@ -42,25 +42,19 @@ Step Progress Bar
       </div>
     </div>
   
+
     
-   <!-- 지도 -->
-   <div id="map" style="width: 500px; height: 400px;"></div> 
-	
-   <!-- <div id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div> -->
+<!-- 지도 영역 -->
+<div id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div>
 
-
-   <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=44322da032bafc078a9ac9bb9cae9777"></script>
-   <!-- <script type="text/javascript"> -->
+<!-- 카카오 지도 API -->
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=44322da032bafc078a9ac9bb9cae9777"></script>
+<!-- script.js -->
+<script src="script.js"></script>
 <script>
-    var container = document.getElementById('map'); //지도를 담을 영역의 DOM 레퍼런스
-    var options = { 
-      center: new kakao.maps.LatLng(33.450701, 126.570667), 
-      level: 3 
-  };
-  
-    var map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
-    
-  </script>
+  const kakaoMap = new KakaoMap('map');
+  kakaoMap.loadCurrentLocation();
+</script>
 
 
    <!-- 버튼 영역 -->
