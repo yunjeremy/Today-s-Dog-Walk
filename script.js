@@ -16,6 +16,9 @@ class WalkTracker {
 
   init() {
     document.getElementById('startWalkButton').addEventListener('click', () => this.toggleWalk());
+    
+// 🟢 리셋 버튼 이벤트 연결
+document.getElementById('resetButton').addEventListener('click', () => this.resetWalk());
 
     // localStorage에서 기존 데이터 복원
     this.steps = parseInt(localStorage.getItem('walkSteps')) || 0;
@@ -35,7 +38,7 @@ class WalkTracker {
     }
   }
 
-  startWalk() {
+    startWalk() {
     this.timerInterval = setInterval(() => this.updateTime(), 1000);
     this.geoWatchId = navigator.geolocation.watchPosition(
       (position) => this.updateDistance(position),
@@ -43,6 +46,7 @@ class WalkTracker {
       { enableHighAccuracy: true }
     );
 
+    
     // DeviceMotionEvent 권한 요청 및 이벤트 등록
     this.motionHandler = (event) => this.handleMotion(event);
 
@@ -70,6 +74,20 @@ class WalkTracker {
     navigator.geolocation.clearWatch(this.geoWatchId);
     window.removeEventListener('devicemotion', this.motionHandler);
   }
+
+  resetWalk() {
+    this.time = 0;
+    this.distance = 0;
+    this.steps = 0;
+    this.lastPosition = null;
+    this.lastStepTime = Date.now();
+
+    localStorage.removeItem('walkSteps');
+    localStorage.removeItem('walkDistance');
+
+    this.updateDisplay();
+  }
+
 
   handleMotion(event) {
     if (!this.isWalking) return;
