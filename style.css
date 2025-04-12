@@ -50,7 +50,7 @@ h1 {
 
 .container {
   position: relative;
-  max-width: 350px;
+  max-width: 300px;
   margin: 20px auto;
   padding: 16px;
   background-color: white; /* ← 요게 컨테이너 색깔이에요 */
