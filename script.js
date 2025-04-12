@@ -237,3 +237,4 @@ const kakaoMap = new KakaoMap();
 //   { lat: 37.5651, lng: 126.9895 }
 // ];
 // kakaoMap.drawPolyline(walkPath);
+
