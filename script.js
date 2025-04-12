@@ -184,50 +184,56 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
 document.addEventListener('DOMContentLoaded', () => new WalkTracker());
 
 
-
 class KakaoMap {
-  constructor(mapContainerId, options = {}) {
-    this.mapContainer = document.getElementById(mapContainerId);
-
-    const defaultOptions = {
+  constructor() {
+    this.container = document.getElementById('map');
+    this.options = {
       center: new kakao.maps.LatLng(33.450701, 126.570667),
-      level: 3,
-      ...options
+      level: 3
     };
-
-    this.map = new kakao.maps.Map(this.mapContainer, defaultOptions);
+    this.map = new kakao.maps.Map(this.container, this.options);
   }
 
-  setCenter(lat, lng) {
-    const moveLatLon = new kakao.maps.LatLng(lat, lng);
-    this.map.setCenter(moveLatLon);
+  // 중심 좌표 이동 메서드
+  setCenter(latitude, longitude) {
+    const newCenter = new kakao.maps.LatLng(latitude, longitude);
+    this.map.setCenter(newCenter);
   }
 
-  addMarker(lat, lng) {
-    const markerPosition = new kakao.maps.LatLng(lat, lng);
+  // 마커 추가 메서드 (옵션)
+  addMarker(latitude, longitude) {
+    const markerPosition = new kakao.maps.LatLng(latitude, longitude);
     const marker = new kakao.maps.Marker({
       position: markerPosition
     });
     marker.setMap(this.map);
-    return marker;
   }
 
-  zoomIn() {
-    this.map.setLevel(this.map.getLevel() - 1);
-  }
-
-  zoomOut() {
-    this.map.setLevel(this.map.getLevel() + 1);
+  // 선 긋기 메서드 (옵션: 산책 경로 표시용)
+  drawPolyline(pathCoords) {
+    const polyline = new kakao.maps.Polyline({
+      path: pathCoords.map(coord => new kakao.maps.LatLng(coord.lat, coord.lng)),
+      strokeWeight: 5,
+      strokeColor: '#FF0000',
+      strokeOpacity: 0.7,
+      strokeStyle: 'solid'
+    });
+    polyline.setMap(this.map);
   }
 }
 
-window.onload = function () {
-  // Kakao Map API가 로드된 후 실행
-  const myMap = new KakaoMap('map');
+// 사용 예시
+const kakaoMap = new KakaoMap();
 
-  // 예시: 지도 중심 이동
-  // myMap.setCenter(37.5665, 126.9780); // 서울
+// 지도 중심 이동
+// kakaoMap.setCenter(37.5665, 126.9780);
 
-  // 예시: 마커 추가
-  // myMap.addMarker(37.5665, 126.9780);
-};
+// 마커 추가
+// kakaoMap.addMarker(37.5665, 126.9780);
+
+// 선 그리기 예시
+// const walkPath = [
+//   { lat: 37.5665, lng: 126.9780 },
+//   { lat: 37.5651, lng: 126.9895 }
+// ];
+// kakaoMap.drawPolyline(walkPath);
