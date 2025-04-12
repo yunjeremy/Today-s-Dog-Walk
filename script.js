@@ -21,6 +21,7 @@ class WalkTracker {
 document.getElementById('resetButton').addEventListener('click', () => this.resetWalk());
 
     // localStorage에서 기존 데이터 복원
+    this.time = parseInt(localStorage.getItem('walkTime')) || 0;
     this.steps = parseInt(localStorage.getItem('walkSteps')) || 0;
     this.distance = parseFloat(localStorage.getItem('walkDistance')) || 0;
     this.updateDisplay();
@@ -119,6 +120,8 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
   updateTime() {
     if (!this.isWalking) return;
     this.time++;
+    localStorage.setItem('walkTime', this.time);
+
     this.updateDisplay();
   }
 
