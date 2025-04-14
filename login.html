@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>로그인 페이지</title>
+  <style>
+    .login-button img {
+      width: 200px; /* 원하는 크기로 조절 */
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>오늘 산책 완료 로그인</h1>
+
+  <!-- 이미지 버튼 -->
+  <div class="login-button" onclick="kakaoLogin();">
+    <img src="icons/kakao_login_medium_narrow.png" alt="카카오 로그인" />
+  </div>
+
+  <!-- 카카오 SDK -->
+  <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+  <script src="auth.js"></script>
+  <script>
+    // 카카오 SDK 초기화
+    Kakao.init('44322da032bafc078a9ac9bb9cae9777');
+    console.log(Kakao.isInitialized());
+
+    // 카카오 로그인 함수 정의
+    function kakaoLogin() {
+      Kakao.Auth.login({
+        success: function (authObj) {
+          console.log('로그인 성공:', authObj); // 로그인 정보 확인
+          // 로그인 성공 후 사용자 정보 요청
+          Kakao.API.request({
+            url: '/v2/user/me',
+            success: function (res) {
+              console.log('사용자 정보:', res); // 사용자 정보 콘솔 출력
+              const nickname = res.kakao_account.profile.nickname; // 닉네임 가져오기
+              console.log('닉네임:', nickname); // 사용자 정보 콘솔 출력
+              localStorage.setItem('nickname', nickname); // localStorage 저장
+             // window.location.href = 'login.html'; // 이동
+             //window.location.href = 'index.html'; // 이동
+            },
+            fail: function (error) {
+              console.error('사용자 정보 요청 실패:', error);
+              alert('사용자 정보 요청 실패');
+            }
+          });
+        },
+        fail: function (err) {
+          console.error('로그인 실패:', err);
+          alert('로그인 실패');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,15 +1,8 @@
-// 웹 앱을 오프라인에서도 동작하게 만드는 파일 (캐싱 / 백그라운드 작업)
-// service-worker.js 는 백그라운드에서 실행되면서 사이트의 파일들을 캐싱하거나, 푸시 알림, 백그라운드 동기화 등을 처리합니다.
-// 주요 기능:
-// 오프라인에서도 앱이 동작하도록 캐싱
-// 빠른 로딩 (캐시된 파일 사용)
-// 푸시 알림
-// 네트워크 연결이 없어도 동작
-// 앱 업데이트 감지
-
+// 서비스 워커 설치 단계
 self.addEventListener('install', function(event) {
   console.log('Service Worker 설치 중...');
   
+  // 리소스를 캐시하는 코드
   event.waitUntil(
     caches.open('my-cache-v1').then(function(cache) {
       console.log('캐시 저장 중...');
@@ -22,7 +15,7 @@ self.addEventListener('install', function(event) {
         '/map.html'
       ];
 
-      // 각 리소스를 추가하는 과정에서 오류 발생 시 처리
+      // 각 리소스를 캐시 저장
       return Promise.all(
         resourcesToCache.map(function(url) {
           return fetch(url).then(function(response) {
@@ -39,11 +32,10 @@ self.addEventListener('install', function(event) {
   );
 });
 
-// Service Worker 활성화 이벤트
+// 서비스 워커 활성화 단계
 self.addEventListener('activate', function(event) {
-  console.log('Service Worker activated.');
-  
-  // 이전 버전의 캐시 삭제 (버전 관리)
+  console.log('Service Worker 활성화');
+
   const cacheWhitelist = ['my-cache-v1']; // 사용할 캐시 목록
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -51,7 +43,7 @@ self.addEventListener('activate', function(event) {
         cacheNames.map((cacheName) => {
           if (!cacheWhitelist.includes(cacheName)) {
             console.log(`캐시 삭제: ${cacheName}`);
-            return caches.delete(cacheName);
+            return caches.delete(cacheName);  // 더 이상 사용되지 않는 캐시 삭제
           }
         })
       );
@@ -59,19 +51,45 @@ self.addEventListener('activate', function(event) {
   );
 });
 
-// Fetch 이벤트 - 캐시 우선 전략
+// fetch 이벤트: 네트워크 우선 처리
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request).then((response) => {
-      // Response를 clone 해서 사용
-      const responseClone = response.clone();
-
-      // 캐시 저장
+      const responseClone = response.clone();  // 캐시 저장을 위한 복제본
       caches.open('my-cache').then((cache) => {
-        cache.put(event.request, responseClone);
+        cache.put(event.request, responseClone);  // 응답을 캐시에 저장
       });
 
-      return response; // 원본 응답 반환
+      return response;  // 원본 응답 반환
     })
   );
+});
+
+// 메시지 처리: 클라이언트로부터 로그인 정보 받기
+self.addEventListener('message', function(event) {
+  if (event.data.type === 'USER_LOGGED_IN') {
+    const user = event.data.user;  // 클라이언트로부터 받은 사용자 정보
+    console.log('로그인한 사용자:', user);
+
+    // 로그인 정보를 서버에 전송 (POST 요청)
+    fetch('/api/saveUser', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user)  // 사용자 정보 서버로 전송
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('서버 응답:', data);
+    })
+    .catch(error => {
+      console.error('서버 통신 오류:', error);
+    });
+
+    // 사용자 정보를 캐시에도 저장 (필요시)
+    caches.open('user-info-cache').then(function(cache) {
+      cache.put('/user-info', new Response(JSON.stringify(user)));
+    });
+  }
 });

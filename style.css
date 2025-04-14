@@ -142,6 +142,21 @@ button:active {
   transform: translateX(-50%) scale(0.98); /* 수평 중앙 유지 + 축소 */
 }
 
+/* 산책 버튼 회전 애니메이션 */
+@keyframes rotate-slowly {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
+
+.rotating {
+  animation: rotate-slowly 3600s linear infinite;
+  transform-origin: center center; /* 회전 중심을 가운데로 지정 */
+}
+
 
 .tab-bar {
   position: fixed;

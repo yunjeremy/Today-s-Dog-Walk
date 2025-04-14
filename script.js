@@ -14,6 +14,9 @@ class WalkTracker {
     this.walkStratTime = null;
     this.walkEndTime = null;
 
+    this.kakaoMap = new KakaoMap('map');
+    this.kakaoMap.loadCurrentLocation();
+
     this.init();
   }
 
@@ -37,32 +40,47 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
 
     if (this.isWalking) {
       this.walkStratTime = new Date();
-      console.log('산책 시작:', this.startTime);
+      console.log('산책 시작:', this.walkStratTime);
+      localStorage.setItem('walkStartTime', this.walkStratTime.toISOString());
+
+      const walkStartTime = localStorage.getItem('walkStartTime');
+      const walkEndTime = localStorage.getItem('walkEndTime');
+
+      // 날짜 바뀌면 초기화
+      console.log('walkStartTime : ', walkStartTime)
+      if (walkEndTime !== null) 
+      {
+        console.log('walkEndTime : ', walkEndTime)
+        if (walkStartTime.split('T')[0] !== walkEndTime.split('T')[0])
+        {
+          this.resetWalk();
+          kakaoMap.pathDrawer.resetPath(); // ✅ 경로 초기화
+        }
+      }
 
       this.startWalk();
     } else {
       this.walkEndTime = new Date();
-      console.log('산책 종료');
-      console.log(`총 시간 : ${this.totalTime}초`);
-      console.log(`총 거리 : ${this.totalDistance}km`);
-      console.log(`총 걸음 수 : ${this.totalSteps}`);
-
-      // 날짜 바뀌면 초기화
-      console.log(this.walkStratTime.toISOString().split('T')[0])
-      console.log(this.walkEndTime.toISOString().split('T')[0])
-      if (this.walkStratTime.toISOString().split('T')[0] !== this.walkEndTime.toISOString().split('T')[0])
-      {
-        this.resetWalk();
-      }
+      localStorage.setItem('walkEndTime', this.walkEndTime.toISOString());
+      console.log('산책 종료 : ', this.walkEndTime)
+      console.log(`총 시간 : ${this.time}초`);
+      console.log(`총 거리 : ${this.distance}km`);
+      console.log(`총 걸음 수 : ${this.steps}`);
 
       this.stopWalk();
     }
   }
 
     startWalk() {
-    this.timerInterval = setInterval(() => this.updateTime(), 1000);
-    this.geoWatchId = navigator.geolocation.watchPosition(
-      (position) => this.updateDistance(position),
+      // 버튼에 회전 효과 추가
+      document.querySelector('#startWalkButton').classList.add('rotating');
+    
+      this.timerInterval = setInterval(() => this.updateTime(), 1000);
+      this.geoWatchId = navigator.geolocation.watchPosition(
+      (position) => {
+        this.updateDistance(position);
+        this.kakaoMap.updatePath(position); // KakaoMap 인스턴스 사용
+      },
       (error) => console.error(error),
       { enableHighAccuracy: true }
     );
@@ -94,6 +112,9 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     clearInterval(this.timerInterval);
     navigator.geolocation.clearWatch(this.geoWatchId);
     window.removeEventListener('devicemotion', this.motionHandler);
+
+    // 버튼에서 회전 클래스 제거
+    document.querySelector('#startWalkButton').classList.remove('rotating');
   }
 
   resetWalk() {
@@ -177,7 +198,7 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    return `${hours}시 ${minutes}분 ${seconds}초`;
+    return `${hours}시 ${minutes}분`;
   }
 
   formatDistance(meters) {
@@ -212,6 +233,7 @@ class KakaoMap {
     this.mapContainer = document.getElementById(mapContainerId);
     this.map = null;
     this.marker = null;
+    this.pathDrawer = null; // 추가
   }
 
   initMap(lat, lon) {
@@ -226,6 +248,17 @@ class KakaoMap {
       position: new kakao.maps.LatLng(lat, lon),
       map: this.map
     });
+
+    this.pathDrawer = new PathDrawer(this.map); // 폴리라인 드로어 생성
+  }
+
+  updatePath(position) {
+    if (this.pathDrawer) {
+      this.pathDrawer.addPosition({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude
+      });
+    }
   }
 
   loadCurrentLocation() {
@@ -238,14 +271,41 @@ class KakaoMap {
         },
         error => {
           console.error('위치 정보를 가져올 수 없습니다.', error);
-          // Fallback: 기본 위치 (서울 시청)
           this.initMap(37.5665, 126.9780);
         }
       );
     } else {
       alert('이 브라우저는 Geolocation을 지원하지 않습니다.');
-      // Fallback: 기본 위치
       this.initMap(37.5665, 126.9780);
     }
   }
 }
+
+
+// Polyline
+class PathDrawer {
+  constructor(map) {
+    this.map = map;
+    this.linePath = [];
+    this.polyline = new kakao.maps.Polyline({
+      path: this.linePath,
+      strokeWeight: 5,
+      strokeColor: '#FFAE00',
+      strokeOpacity: 0.7,
+      strokeStyle: 'solid'
+    });
+    this.polyline.setMap(this.map);
+  }
+
+  addPosition(position) {
+    const latLng = new kakao.maps.LatLng(position.latitude, position.longitude);
+    this.linePath.push(latLng);
+    this.polyline.setPath(this.linePath);
+  }
+
+  resetPath() {
+    this.linePath = [];
+    this.polyline.setPath(this.linePath);
+  }
+}
+
