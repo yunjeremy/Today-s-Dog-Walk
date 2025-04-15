@@ -53,7 +53,7 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
       if (walkEndTime !== null) 
       {
         console.log('walkEndTime : ', walkEndTime)
-        if (walkStartTime.split('T')[0] !== walkEndTime.split('T')[0])
+        if (new Date(walkStartTime).getDate !== new Date(walkEndTime).getDate)
         {
           this.resetWalk();
           kakaoMap.pathDrawer.resetPath(); // ✅ 경로 초기화
