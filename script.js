@@ -40,8 +40,10 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
 
     if (this.isWalking) {
       this.walkStratTime = new Date();
+      this.walkStratTime = this.walkStratTime.toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'});
+
       console.log('산책 시작:', this.walkStratTime);
-      localStorage.setItem('walkStartTime', this.walkStratTime.toISOString());
+      localStorage.setItem('walkStartTime', this.walkStratTime);
 
       const walkStartTime = localStorage.getItem('walkStartTime');
       const walkEndTime = localStorage.getItem('walkEndTime');
@@ -61,7 +63,8 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
       this.startWalk();
     } else {
       this.walkEndTime = new Date();
-      localStorage.setItem('walkEndTime', this.walkEndTime.toISOString());
+      this.walkEndTime = this.walkEndTime.toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'}); 
+      localStorage.setItem('walkEndTime', this.walkEndTime);
       console.log('산책 종료 : ', this.walkEndTime)
       console.log(`총 시간 : ${this.time}초`);
       console.log(`총 거리 : ${this.distance}km`);
@@ -74,10 +77,11 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     startWalk() {
       // 버튼에 회전 효과 추가
       document.querySelector('#startWalkButton').classList.add('rotating');
-    
+      console.log(`산책 중`);
       this.timerInterval = setInterval(() => this.updateTime(), 1000);
       this.geoWatchId = navigator.geolocation.watchPosition(
       (position) => {
+        console.log('위치:', position); 
         this.updateDistance(position);
         this.kakaoMap.updatePath(position); // KakaoMap 인스턴스 사용
       },
