@@ -18,10 +18,10 @@ class WalkTracker {
     this.kakaoMap.loadCurrentLocation();
 
     // 위도, 경도
-    this.maxLat = 0;
-    this.minLat = 0;
-    this.maxLng = 0;
-    this.minLng = 0;
+    this.maxLat = -Infinity;
+    this.minLat = Infinity;
+    this.maxLng = -Infinity;
+    this.minLng = Infinity;
 
     this.init();
   }
@@ -136,10 +136,10 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     this.lastStepTime = Date.now();
 
     // 위도, 경도
-    this.maxLat = 0;
-    this.minLat = 0;
-    this.maxLng = 0;
-    this.minLng = 0;
+    this.maxLat = -Infinity;
+    this.minLat = Infinity;
+    this.maxLng = -Infinity;
+    this.minLng = Infinity;
 
     console.log('매일 0시에 초기화되었습니다!');
 
