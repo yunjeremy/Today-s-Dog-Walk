@@ -56,7 +56,6 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
         if (new Date(walkStartTime).getDate !== new Date(walkEndTime).getDate)
         {
           this.resetWalk();
-          kakaoMap.pathDrawer.resetPath(); // ✅ 경로 초기화
         }
       }
 
@@ -129,6 +128,8 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     this.lastStepTime = Date.now();
     console.log('매일 0시에 초기화되었습니다!');
 
+    kakaoMap.pathDrawer.resetPath(); // ✅ 경로 초기화
+    
     localStorage.removeItem('walkTime');
     localStorage.removeItem('walkSteps');
     localStorage.removeItem('walkDistance');
