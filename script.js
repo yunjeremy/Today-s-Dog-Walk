@@ -221,10 +221,10 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
         (position) => {
           // 현재 위치 저장
           this.kakaoMap.updatePath(position);
-          this.maxLat = Math.max(this.maxLat, position.latitude);
-          this.minLat = Math.min(this.minLat, position.latitude);
-          this.maxLng = Math.max(this.maxLng, position.longitude);
-          this.minLng = Math.min(this.minLng, position.longitude);
+          this.maxLat = Math.max(this.maxLat, position.coords.latitude);
+          this.minLat = Math.min(this.minLat, position.coords.latitude);
+          this.maxLng = Math.max(this.maxLng, position.coords.longitude);
+          this.minLng = Math.min(this.minLng, position.coords.longitude);
         },
         (error) => {
           console.error('위치 가져오기 실패:', error);
@@ -337,7 +337,7 @@ class PathDrawer {
     this.linePath = [];
     this.polyline = new kakao.maps.Polyline({
       path: this.linePath,
-      strokeWeight: 2,
+      strokeWeight: 5,
       strokeColor: '#6da9de',
       strokeOpacity: 0.8,
       strokeStyle: 'solid'
