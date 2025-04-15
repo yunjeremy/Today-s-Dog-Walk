@@ -129,7 +129,7 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     console.log('매일 0시에 초기화되었습니다!');
 
     kakaoMap.pathDrawer.resetPath(); // ✅ 경로 초기화
-    
+
     localStorage.removeItem('walkTime');
     localStorage.removeItem('walkSteps');
     localStorage.removeItem('walkDistance');
@@ -294,9 +294,9 @@ class PathDrawer {
     this.linePath = [];
     this.polyline = new kakao.maps.Polyline({
       path: this.linePath,
-      strokeWeight: 5,
-      strokeColor: '#FFAE00',
-      strokeOpacity: 0.7,
+      strokeWeight: 10,
+      strokeColor: '#6da9de',
+      strokeOpacity: 0.8,
       strokeStyle: 'solid'
     });
     this.polyline.setMap(this.map);
