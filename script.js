@@ -176,6 +176,7 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
   updateDistance(position) {
     if (!this.lastPosition) {
       this.lastPosition = position.coords;
+      console.log('coords :', position.coords); 
       return;
     }
 
@@ -294,7 +295,7 @@ class PathDrawer {
     this.linePath = [];
     this.polyline = new kakao.maps.Polyline({
       path: this.linePath,
-      strokeWeight: 10,
+      strokeWeight: 2,
       strokeColor: '#6da9de',
       strokeOpacity: 0.8,
       strokeStyle: 'solid'
