@@ -17,6 +17,12 @@ class WalkTracker {
     this.kakaoMap = new KakaoMap('map');
     this.kakaoMap.loadCurrentLocation();
 
+    // 위도, 경도
+    this.maxLat = 0;
+    this.minLat = 0;
+    this.maxLng = 0;
+    this.minLng = 0;
+
     this.init();
   }
 
@@ -68,6 +74,8 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
       console.log(`총 시간 : ${this.time}초`);
       console.log(`총 거리 : ${this.distance}km`);
       console.log(`총 걸음 수 : ${this.steps}`);
+
+      console.log(`maxLat:${this.maxLat}, minLat:${this.minLat}, maxLng:${this.maxLng}, minLng:${this.minLng}`);
 
       this.stopWalk();
     }
@@ -126,6 +134,13 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     this.steps = 0;
     this.lastPosition = null;
     this.lastStepTime = Date.now();
+
+    // 위도, 경도
+    this.maxLat = 0;
+    this.minLat = 0;
+    this.maxLng = 0;
+    this.minLng = 0;
+
     console.log('매일 0시에 초기화되었습니다!');
 
     kakaoMap.pathDrawer.resetPath(); // ✅ 경로 초기화
@@ -206,6 +221,10 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
         (position) => {
           // 현재 위치 저장
           this.kakaoMap.updatePath(position);
+          this.maxLat = Math.max(this.maxLat, position.latitude);
+          this.minLat = Math.min(this.minLat, position.latitude);
+          this.maxLng = Math.max(this.maxLng, position.longitude);
+          this.minLng = Math.min(this.minLng, position.longitude);
         },
         (error) => {
           console.error('위치 가져오기 실패:', error);
