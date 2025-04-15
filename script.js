@@ -52,7 +52,7 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
       console.log('walkStartTime : ', walkStartTime)
       if (walkEndTime !== null) 
       {
-        console.log('walkEndTime : ', walkEndTime)
+        console.log('pre walkEndTime : ', walkEndTime)
         if (new Date(walkStartTime).getDate !== new Date(walkEndTime).getDate)
         {
           this.resetWalk();
