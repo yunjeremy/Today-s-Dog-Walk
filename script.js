@@ -78,15 +78,15 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
       document.querySelector('#startWalkButton').classList.add('rotating');
       console.log(`산책 중`);
       this.timerInterval = setInterval(() => this.updateTime(), 1000);
-      this.geoWatchId = navigator.geolocation.watchPosition(
-      (position) => {
-        console.log('위치:', position); 
-        this.updateDistance(position);
-        this.kakaoMap.updatePath(position); // KakaoMap 인스턴스 사용
-      },
-      (error) => console.error(error),
-      { enableHighAccuracy: true }
-    );
+    //   this.geoWatchId = navigator.geolocation.watchPosition(
+    //   (position) => {
+    //     console.log('위치:', position); 
+    //     this.updateDistance(position);
+    //     this.kakaoMap.updatePath(position); // KakaoMap 인스턴스 사용
+    //   },
+    //   (error) => console.error(error),
+    //   { enableHighAccuracy: true }
+    // );
 
     
     // DeviceMotionEvent 권한 요청 및 이벤트 등록
@@ -161,6 +161,12 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
       localStorage.setItem('walkSteps', this.steps);
       localStorage.setItem('walkDistance', this.distance);
 
+
+      // 5의 배수일 때만 위치 갱신
+      if (this.steps % 5 === 0) {
+        this.saveCurrentPosition();
+      }
+
       this.updateDisplay();
     }
   }
@@ -176,7 +182,6 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
   updateDistance(position) {
     if (!this.lastPosition) {
       this.lastPosition = position.coords;
-      console.log('coords :', position.coords); 
       return;
     }
 
@@ -192,6 +197,24 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
     this.lastPosition = current;
 
     this.updateDisplay();
+  }
+
+
+  saveCurrentPosition() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // 현재 위치 저장
+          this.kakaoMap.updatePath(position);
+        },
+        (error) => {
+          console.error('위치 가져오기 실패:', error);
+        },
+        {
+          enableHighAccuracy: true
+        }
+      );
+    }
   }
 
   updateDisplay() {
