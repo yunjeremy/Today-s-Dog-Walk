@@ -221,6 +221,7 @@ document.getElementById('resetButton').addEventListener('click', () => this.rese
         (position) => {
           // 현재 위치 저장
           this.kakaoMap.updatePath(position);
+          this.updateDistance(position);
           this.maxLat = Math.max(this.maxLat, position.coords.latitude);
           this.minLat = Math.min(this.minLat, position.coords.latitude);
           this.maxLng = Math.max(this.maxLng, position.coords.longitude);
